@@ -1,34 +1,53 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+@keyframes pulse-ring {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 0; }
+    100% { transform: scale(0.8); opacity: 0.5; }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+@keyframes fingerprint-scan {
+    0% { background-position: 0% 100%; }
+    50% { background-position: 0% 0%; }
+    100% { background-position: 0% 100%; }
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.animate-pulse-ring {
+    animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
 }
 
-.App-link {
-    color: #61dafb;
+.animate-fingerprint {
+    animation: fingerprint-scan 2s ease-in-out infinite;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.tracing-beam {
+    position: relative;
+}
+
+.tracing-beam::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: hsl(221 83% 53%);
+    border-radius: 2px;
+    box-shadow: 0 0 8px hsl(221 83% 53% / 0.4);
+}
+
+.glass-header {
+    background: hsl(var(--background) / 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.sidebar-gradient {
+    background: hsl(244 47% 20%);
+}
+
+.kanban-column {
+    min-height: 400px;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
 }
