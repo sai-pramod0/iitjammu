@@ -178,6 +178,15 @@ export default function LoginPage() {
               ))}
             </div>
           </div>
+
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              New here?{' '}
+              <button onClick={() => navigate('/register')} className="text-[hsl(221,83%,53%)] hover:underline font-medium" data-testid="go-to-register">
+                Register with domain
+              </button>
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>
