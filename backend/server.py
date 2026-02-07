@@ -22,6 +22,9 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 JWT_SECRET = os.environ.get('JWT_SECRET', 'fallback-secret')
 STRIPE_API_KEY = os.environ.get('STRIPE_API_KEY', '')
+EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+
+DOMAIN_PRICES = {".com": 12.99, ".io": 24.99, ".co": 14.99, ".dev": 19.99, ".app": 16.99}
 
 app = FastAPI()
 api_router = APIRouter(prefix="/api")
