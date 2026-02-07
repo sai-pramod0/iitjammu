@@ -14,6 +14,7 @@ import SubscriptionPage from "./pages/SubscriptionPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import AuditLogsPage from "./pages/AuditLogsPage";
 import UserManagementPage from "./pages/UserManagementPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
