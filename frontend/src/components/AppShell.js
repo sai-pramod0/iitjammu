@@ -41,6 +41,7 @@ const NAV_ITEMS = [
   { path: '/hr', label: 'HR', icon: Building2, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
   { path: '/finance', label: 'Finance', icon: Receipt, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
   { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
+  { path: '/analytics', label: 'Analytics', icon: Brain, roles: ['super_admin', 'main_handler', 'admin'] },
 ];
 
 const ADMIN_NAV = [
