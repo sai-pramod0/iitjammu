@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, Briefcase, FolderKanban,
   Building2, Receipt, Bell, Menu, ChevronLeft,
-  LogOut, Grid3x3, Shield, FileText, CreditCard, Fingerprint
+  LogOut, Grid3x3, Shield, FileText, CreditCard, Fingerprint, Brain
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
