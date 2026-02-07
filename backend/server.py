@@ -162,6 +162,20 @@ class CheckoutRequest(BaseModel):
 class UserRoleUpdate(BaseModel):
     role: str
 
+class DomainCheckRequest(BaseModel):
+    domain: str
+
+class DomainPurchaseRequest(BaseModel):
+    domain: str
+    email: str
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    company: str
+    domain: str = ""
+
 # ==================== AUTH ROUTES ====================
 
 @api_router.post("/auth/login")
