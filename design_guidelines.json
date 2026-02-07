@@ -1,0 +1,172 @@
+{
+  "design_system": {
+    "identity": {
+      "name": "Enterprise One",
+      "archetype": "Swiss High-Contrast",
+      "tone": "Authoritative, Precise, Global, Efficient",
+      "metaphor": "The Cockpit - Maximum visibility, zero clutter"
+    },
+    "typography": {
+      "headings": {
+        "family": "Manrope, sans-serif",
+        "weights": ["600", "700", "800"],
+        "tracking": "tight"
+      },
+      "body": {
+        "family": "Public Sans, sans-serif",
+        "weights": ["400", "500", "600"],
+        "tracking": "normal"
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "usage": "Data points, IDs, Financial figures"
+      },
+      "scale": {
+        "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold tracking-tight",
+        "body": "text-base leading-relaxed",
+        "small": "text-sm text-muted-foreground",
+        "tiny": "text-xs font-medium uppercase tracking-wider"
+      }
+    },
+    "colors": {
+      "mode": "light (default) | dark (toggle)",
+      "palette": {
+        "primary": {
+          "name": "Deep Indigo",
+          "hex": "#1e1b4b",
+          "tailwind": "indigo-950",
+          "usage": "Global Headers, Sidebar, Primary Brand Elements"
+        },
+        "accent": {
+          "name": "Signal Blue",
+          "hex": "#2563eb",
+          "tailwind": "blue-600",
+          "usage": "Primary Buttons, Active States, Links"
+        },
+        "success": {
+          "name": "Growth Teal",
+          "hex": "#0f766e",
+          "tailwind": "teal-700",
+          "usage": "Positive Trends, Completed Status"
+        },
+        "warning": {
+          "name": "Alert Orange",
+          "hex": "#c2410c",
+          "tailwind": "orange-700",
+          "usage": "Critical Alerts, Pending Actions"
+        },
+        "neutral": {
+          "light": "#f8fafc",
+          "dark": "#09090b",
+          "border": "#e2e8f0"
+        }
+      },
+      "gradients": {
+        "forbidden": "No Purple/Violet gradients on white",
+        "allowed": "Subtle top-down fade on dashboard backgrounds (white to slate-50)"
+      }
+    },
+    "layout": {
+      "grid_system": "Bento Grid - Mode B (High Density)",
+      "spacing": {
+        "base": "p-6",
+        "container": "max-w-[1600px] mx-auto",
+        "gap": "gap-6",
+        "dashboard_gap": "gap-4"
+      },
+      "radius": {
+        "default": "rounded-md",
+        "card": "rounded-lg",
+        "button": "rounded-md",
+        "input": "rounded-md"
+      }
+    },
+    "components": {
+      "buttons": {
+        "style": "Flat or Outline. No heavy shadows.",
+        "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+        "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        "ghost": "hover:bg-accent hover:text-accent-foreground"
+      },
+      "cards": {
+        "style": "Border-heavy, minimal shadow.",
+        "base": "bg-card text-card-foreground border border-border shadow-sm",
+        "hover": "hover:border-primary/50 transition-colors duration-200"
+      },
+      "inputs": {
+        "style": "High contrast borders for accessibility.",
+        "base": "h-10 border-input bg-background ring-offset-background focus-visible:ring-2 focus-visible:ring-ring"
+      },
+      "tables": {
+        "style": "Density: Compact. Row hover effects mandatory.",
+        "header": "bg-muted/50 font-medium text-xs uppercase tracking-wider"
+      }
+    },
+    "visual_enhancers": {
+      "glassmorphism": {
+        "usage": "Sticky Headers, Modal Overlays",
+        "class": "bg-background/80 backdrop-blur-md border-b"
+      },
+      "tracing_beam": {
+        "usage": "Active Sidebar Items, Active Subscription Cards",
+        "description": "A vertical glowing line indicator"
+      },
+      "noise_texture": {
+        "usage": "Sidebar background only",
+        "opacity": "opacity-[0.03]"
+      }
+    },
+    "motion": {
+      "library": "framer-motion",
+      "transitions": {
+        "default": "transition-all duration-200 ease-in-out",
+        "page_enter": "opacity: 0, y: 10 -> opacity: 1, y: 0 (duration: 0.4s)",
+        "hover_lift": "translate-y-[-2px]"
+      }
+    },
+    "assets": {
+      "icons": {
+        "library": "lucide-react",
+        "style": "Stroke width 1.5px (Thin/Elegant)",
+        "fallback": "FontAwesome (if Lucide missing)"
+      },
+      "images": {
+        "login_bg": {
+          "url": "https://images.unsplash.com/photo-1761979089822-0b058236d195?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzR8MHwxfHNlYXJjaHwyfHxtb2Rlcm4lMjBjb3Jwb3JhdGUlMjBvZmZpY2UlMjBhcmNoaXRlY3R1cmUlMjBhYnN0cmFjdCUyMG1pbmltYWx8ZW58MHx8fHwxNzcwNDY3MjkyfDA&ixlib=rb-4.1.0&q=85",
+          "alt": "Modern Corporate Architecture"
+        },
+        "avatars": [
+          "https://images.unsplash.com/photo-1758691736975-9f7f643d178e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwZGl2ZXJzZSUyMHRlYW0lMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzA0NjcyOTN8MA&ixlib=rb-4.1.0&q=85",
+          "https://images.unsplash.com/photo-1758873268663-5a362616b5a7?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2Mzl8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0JTIwZGl2ZXJzZSUyMHRlYW0lMjBoZWFkc2hvdHxlbnwwfHx8fDE3NzA0NjcyOTN8MA&ixlib=rb-4.1.0&q=85"
+        ]
+      }
+    }
+  },
+  "implementation_rules": {
+    "general": [
+      "DO NOT use 'Inter' font. Use 'Manrope' for headings and 'Public Sans' for body.",
+      "Use 'sonner' for all toast notifications.",
+      "Ensure all interactive elements have `data-testid` attributes.",
+      "Avoid purple/violet gradients on white backgrounds.",
+      "Use 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4' for dashboard widgets."
+    ],
+    "components_path": "/app/frontend/src/components/ui",
+    "required_packages": [
+      "lucide-react",
+      "framer-motion",
+      "recharts",
+      "clsx",
+      "tailwind-merge",
+      "sonner"
+    ]
+  },
+  "universal_guidelines": [
+    "Create depth through layered design elements (z-index).",
+    "Use glass-morphism effects with backdrop filters (12px blur).",
+    "NEVER use generic 'transition: all'. Use specific properties.",
+    "Do NOT center align the app container text.",
+    "Micro-animations on hover are mandatory."
+  ]
+}
