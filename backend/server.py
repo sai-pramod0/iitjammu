@@ -494,6 +494,196 @@ async def get_dashboard_stats(user=Depends(get_current_user)):
             "pending_leaves": pending_leaves, "invoices": invoices,
             "total_revenue": total_revenue, "pending_expenses": pending_expenses}
 
+# ==================== AI ANALYTICS ROUTES ====================
+
+@api_router.post("/analytics/burn-rate")
+async def analyze_burn_rate(user=Depends(require_roles("super_admin", "main_handler", "admin"))):
+    expenses = await db.expenses.find({}, {"_id": 0}).to_list(1000)
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(1000)
+    users_count = await db.users.count_documents({})
+    total_expenses = sum(e.get("amount", 0) for e in expenses)
+    total_revenue = sum(i.get("total", 0) for i in invoices if i.get("status") == "paid")
+    net_burn = max(total_expenses - total_revenue, 0)
+    expense_by_cat = {}
+    for e in expenses:
+        cat = e.get("category", "other")
+        expense_by_cat[cat] = expense_by_cat.get(cat, 0) + e.get("amount", 0)
+    metrics = {
+        "total_expenses": total_expenses, "total_revenue": total_revenue, "net_burn": net_burn,
+        "runway_months": round(total_revenue / max(net_burn, 0.01), 1) if net_burn > 0 else 99,
+        "employee_count": users_count,
+        "burn_per_employee": round(total_expenses / max(users_count, 1), 2),
+        "expense_breakdown": [{"category": k, "amount": v} for k, v in expense_by_cat.items()],
+        "revenue_vs_expense": [{"name": "Revenue", "value": total_revenue}, {"name": "Expenses", "value": total_expenses}]
+    }
+    ai_response = ""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=f"burn-{uuid.uuid4()}", system_message="You are a senior financial analyst specializing in startup burn rate analysis. Be concise, data-driven, and actionable. Use bullet points for recommendations.").with_model("openai", "gpt-5.2")
+        prompt = f"""Analyze this company's burn rate:
+- Total Expenses: ${total_expenses}
+- Total Revenue: ${total_revenue}
+- Net Burn Rate: ${net_burn}/month
+- Employees: {users_count}, Burn/Employee: ${metrics['burn_per_employee']}
+- Expense Breakdown: {json.dumps(expense_by_cat)}
+- Invoices: {len(invoices)} total, {sum(1 for i in invoices if i.get('status')=='paid')} paid
+
+Provide: 1) Burn rate health assessment 2) Risk level (Low/Medium/High/Critical) 3) Runway analysis 4) Top 3 cost optimization recommendations with estimated savings."""
+        ai_response = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error(f"AI burn rate error: {e}")
+        ai_response = "AI analysis temporarily unavailable. Review metrics for manual assessment."
+    await log_audit(user["id"], user["name"], "analyze", "analytics", "Burn rate analysis")
+    return {"metrics": metrics, "ai_analysis": ai_response}
+
+@api_router.post("/analytics/unit-economics")
+async def analyze_unit_economics(user=Depends(require_roles("super_admin", "main_handler", "admin"))):
+    leads = await db.leads.find({}, {"_id": 0}).to_list(1000)
+    deals = await db.deals.find({}, {"_id": 0}).to_list(1000)
+    invoices = await db.invoices.find({}, {"_id": 0}).to_list(1000)
+    expenses = await db.expenses.find({}, {"_id": 0}).to_list(1000)
+    users_count = await db.users.count_documents({})
+    total_revenue = sum(i.get("total", 0) for i in invoices if i.get("status") == "paid")
+    total_deal_value = sum(d.get("value", 0) for d in deals)
+    won_deals = [d for d in deals if d.get("stage") == "closed_won"]
+    total_expenses = sum(e.get("amount", 0) for e in expenses)
+    marketing_exp = sum(e.get("amount", 0) for e in expenses if e.get("category") == "marketing")
+    num_customers = max(len(won_deals), len([i for i in invoices if i.get("status") == "paid"]), 1)
+    cac = round(max(marketing_exp, total_expenses * 0.3) / max(num_customers, 1), 2)
+    arpu = round(total_revenue / max(num_customers, 1), 2)
+    ltv = round(arpu * 12, 2)
+    ltv_cac = round(ltv / max(cac, 0.01), 2)
+    payback = round(cac / max(arpu / 12, 0.01), 1) if arpu > 0 else 0
+    gross_margin = round((total_revenue - total_expenses) / max(total_revenue, 0.01) * 100, 1)
+    rev_per_emp = round(total_revenue / max(users_count, 1), 2)
+    conversion = round(len(won_deals) / max(len(leads), 1) * 100, 1) if leads else 0
+    metrics = {
+        "cac": cac, "ltv": ltv, "ltv_cac_ratio": ltv_cac, "payback_months": payback, "arpu": arpu,
+        "gross_margin": gross_margin, "revenue_per_employee": rev_per_emp,
+        "total_customers": num_customers, "conversion_rate": conversion,
+        "total_leads": len(leads), "total_deals": len(deals), "pipeline_value": total_deal_value,
+        "deal_stages": [
+            {"stage": s.replace("_", " ").title(), "count": len([d for d in deals if d.get("stage") == s]),
+             "value": sum(d.get("value", 0) for d in deals if d.get("stage") == s)}
+            for s in ["prospecting", "negotiation", "proposal", "closed_won", "closed_lost"]
+        ]
+    }
+    ai_response = ""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=f"ue-{uuid.uuid4()}", system_message="You are a SaaS unit economics expert. Analyze metrics and provide strategic recommendations with specific numbers. Use bullet points.").with_model("openai", "gpt-5.2")
+        prompt = f"""Analyze unit economics:
+- CAC: ${cac}, LTV: ${ltv}, LTV/CAC: {ltv_cac}x, Payback: {payback} months
+- ARPU: ${arpu}, Gross Margin: {gross_margin}%, Revenue/Employee: ${rev_per_emp}
+- Pipeline: {len(leads)} leads, {len(deals)} deals (${total_deal_value} value)
+- Conversion: {conversion}%, Customers: {num_customers}
+
+Provide: 1) Health score (1-10) with explanation 2) Strengths and concerns 3) Top 3 growth recommendations to improve LTV/CAC."""
+        ai_response = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error(f"AI unit economics error: {e}")
+        ai_response = "AI analysis temporarily unavailable."
+    await log_audit(user["id"], user["name"], "analyze", "analytics", "Unit economics analysis")
+    return {"metrics": metrics, "ai_analysis": ai_response}
+
+@api_router.post("/analytics/product-optimization")
+async def analyze_product_optimization(user=Depends(require_roles("super_admin", "main_handler", "admin"))):
+    audit_logs = await db.audit_logs.find({}, {"_id": 0}).to_list(1000)
+    tasks = await db.tasks.find({}, {"_id": 0}).to_list(1000)
+    leads = await db.leads.find({}, {"_id": 0}).to_list(1000)
+    deals = await db.deals.find({}, {"_id": 0}).to_list(1000)
+    feature_usage = {}
+    user_activity = {}
+    action_types = {}
+    for log in audit_logs:
+        resource = log.get("resource", "other")
+        feature_usage[resource] = feature_usage.get(resource, 0) + 1
+        uname = log.get("user_name", "Unknown")
+        user_activity[uname] = user_activity.get(uname, 0) + 1
+        action = log.get("action", "unknown")
+        action_types[action] = action_types.get(action, 0) + 1
+    completed = len([t for t in tasks if t.get("status") == "done"])
+    task_completion = round(completed / max(len(tasks), 1) * 100, 1)
+    qualified = len([l for l in leads if l.get("status") == "qualified"])
+    lead_conversion = round(qualified / max(len(leads), 1) * 100, 1)
+    task_by_status = {}
+    for t in tasks:
+        s = t.get("status", "unknown")
+        task_by_status[s] = task_by_status.get(s, 0) + 1
+    metrics = {
+        "feature_usage": [{"feature": k, "count": v} for k, v in sorted(feature_usage.items(), key=lambda x: -x[1])],
+        "user_activity": [{"user": k, "actions": v} for k, v in sorted(user_activity.items(), key=lambda x: -x[1])],
+        "action_breakdown": [{"action": k, "count": v} for k, v in sorted(action_types.items(), key=lambda x: -x[1])],
+        "task_completion_rate": task_completion, "lead_conversion_rate": lead_conversion,
+        "task_distribution": [{"status": k.replace("_", " ").title(), "count": v} for k, v in task_by_status.items()],
+        "total_actions": len(audit_logs), "active_users": len(user_activity),
+    }
+    ai_response = ""
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=f"po-{uuid.uuid4()}", system_message="You are a product analytics expert. Analyze user behavior and suggest data-driven optimizations. Use bullet points.").with_model("openai", "gpt-5.2")
+        prompt = f"""Analyze product usage:
+- Feature Usage: {json.dumps(dict(list(feature_usage.items())[:10]))}
+- {len(user_activity)} active users, {len(audit_logs)} total actions
+- Actions: {json.dumps(dict(list(action_types.items())[:10]))}
+- Task Completion: {task_completion}%, Lead Conversion: {lead_conversion}%
+- Tasks: {json.dumps(task_by_status)}
+
+Provide: 1) Engagement assessment 2) Feature adoption gaps 3) Top 3 optimization recommendations with expected impact."""
+        ai_response = await chat.send_message(UserMessage(text=prompt))
+    except Exception as e:
+        logger.error(f"AI product optimization error: {e}")
+        ai_response = "AI analysis temporarily unavailable."
+    await log_audit(user["id"], user["name"], "analyze", "analytics", "Product optimization analysis")
+    return {"metrics": metrics, "ai_analysis": ai_response}
+
+# ==================== DOMAIN & REGISTRATION ====================
+
+@api_router.post("/domains/check")
+async def check_domain(req: DomainCheckRequest):
+    base = req.domain.lower().strip().replace(" ", "").split(".")[0]
+    if not base or len(base) < 2:
+        raise HTTPException(status_code=400, detail="Invalid domain name")
+    results = []
+    for ext, price in DOMAIN_PRICES.items():
+        full = f"{base}{ext}"
+        existing = await db.domains.find_one({"domain": full})
+        available = existing is None and random.random() > 0.25
+        results.append({"domain": full, "available": available, "price": price})
+    return results
+
+@api_router.post("/domains/purchase")
+async def purchase_domain(req: DomainPurchaseRequest):
+    existing = await db.domains.find_one({"domain": req.domain})
+    if existing:
+        raise HTTPException(status_code=400, detail="Domain already taken")
+    doc = {
+        "id": str(uuid.uuid4()), "domain": req.domain, "owner_email": req.email,
+        "status": "active", "purchased_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": (datetime.now(timezone.utc) + timedelta(days=365)).isoformat(),
+    }
+    await db.domains.insert_one(doc)
+    doc.pop("_id", None)
+    return doc
+
+@api_router.post("/auth/register")
+async def register(req: RegisterRequest):
+    existing = await db.users.find_one({"email": req.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    user_doc = {
+        "id": str(uuid.uuid4()), "email": req.email, "name": req.name,
+        "password_hash": hash_password(req.password), "role": "admin",
+        "department": "general", "subscription": "free", "company": req.company,
+        "domain": req.domain, "biometric_enabled": False, "biometric_credential_id": None,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.users.insert_one(user_doc)
+    token = create_token(user_doc["id"], user_doc["role"])
+    await log_audit(user_doc["id"], req.name, "register", "auth", f"New user registered: {req.email}")
+    await create_notification(user_doc["id"], "Welcome to Enterprise One", f"Account created with {req.email}. Start exploring!", "system")
+    return {"token": token, "user": {k: v for k, v in user_doc.items() if k not in ["password_hash", "_id"]}}
+
 # ==================== SEED DATA ====================
 
 async def seed_database():
