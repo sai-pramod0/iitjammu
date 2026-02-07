@@ -56,6 +56,7 @@ const MODULE_GRID = [
   { path: '/finance', label: 'Finance', icon: Receipt, color: 'bg-emerald-500' },
   { path: '/subscription', label: 'Plans', icon: CreditCard, color: 'bg-violet-500' },
   { path: '/notifications', label: 'Alerts', icon: Bell, color: 'bg-rose-500' },
+  { path: '/analytics', label: 'Analytics', icon: Brain, color: 'bg-indigo-500' },
 ];
 
 export default function AppShell({ children }) {
