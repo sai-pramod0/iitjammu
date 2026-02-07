@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import AppShell from "./components/AppShell";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import CRMPage from "./pages/CRMPage";
 import ProjectsPage from "./pages/ProjectsPage";
