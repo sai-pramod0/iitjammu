@@ -22,10 +22,35 @@ const STAT_CARDS = [
 const PIE_COLORS = ['hsl(221,83%,53%)', 'hsl(175,77%,26%)', 'hsl(17,88%,40%)', 'hsl(43,74%,66%)'];
 
 const ROLE_ACCESS = {
-  super_admin: { label: 'God Mode', desc: 'Full access to all modules and admin controls' },
-  main_handler: { label: 'Operations', desc: 'Access to all modules and audit logs' },
-  admin: { label: 'Department Admin', desc: 'CRM, Projects, HR, and Finance management' },
-  employee: { label: 'Team Member', desc: 'View projects, submit leaves and expenses' },
+  super_admin: { label: 'Super Admin', desc: 'Full System Control' },
+  main_handler: { label: 'Main Handler', desc: 'Operations & Audit' },
+  admin: { label: 'Administrator', desc: 'Company Management' },
+  ceo: { label: 'CEO', desc: 'Executive Overview' },
+  hr: { label: 'HR Manager', desc: 'Talent & Culture' },
+  manager: { label: 'Manager', desc: 'Team & Project Lead' },
+  server: { label: 'Server/IT', desc: 'System Status' },
+  employee: { label: 'Team Member', desc: 'My Workspace' },
+};
+
+const getStatsForRole = (role) => {
+  const all = STAT_CARDS;
+  switch (role) {
+    case 'ceo':
+    case 'super_admin':
+      return all; // All stats
+    case 'admin':
+      return all.filter(s => ['leads', 'deals', 'employees', 'total_revenue'].includes(s.key));
+    case 'hr':
+      return all.filter(s => ['employees', 'pending_leaves', 'tasks'].includes(s.key));
+    case 'manager':
+      return all.filter(s => ['tasks', 'deals', 'employees'].includes(s.key));
+    case 'server':
+      return all.filter(s => ['tasks'].includes(s.key));
+    case 'employee':
+      return all.filter(s => ['tasks', 'pending_leaves'].includes(s.key));
+    default:
+      return all;
+  }
 };
 
 export default function DashboardPage() {
@@ -37,6 +62,8 @@ export default function DashboardPage() {
   useEffect(() => {
     api.get('/dashboard/stats').then(r => { setStats(r.data); setLoading(false); }).catch(() => setLoading(false));
   }, []);
+
+  const roleStats = getStatsForRole(user?.role);
 
   const barData = [
     { name: 'Leads', value: stats.leads || 0 },
@@ -62,9 +89,10 @@ export default function DashboardPage() {
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ fontFamily: 'Manrope' }} data-testid="dashboard-welcome">
             Welcome, {user?.name?.split(' ')[0]}
           </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {access.label} — {access.desc}
-          </p>
+          <div className="text-muted-foreground mt-1 text-sm flex items-center gap-2">
+            <Badge variant="secondary" className={access.color}>{access.label}</Badge>
+            <span>{access.desc}</span>
+          </div>
         </div>
         <Badge variant="outline" className="text-xs">
           {user?.subscription?.charAt(0).toUpperCase() + user?.subscription?.slice(1)} Plan
@@ -72,8 +100,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4" data-testid="stats-grid">
-        {STAT_CARDS.map((card, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" data-testid="stats-grid">
+        {roleStats.map((card, i) => (
           <motion.div
             key={card.key}
             initial={{ opacity: 0, y: 12 }}
@@ -97,44 +125,46 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border shadow-sm" data-testid="bar-chart-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold" style={{ fontFamily: 'Manrope' }}>Module Overview</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={barData}>
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
-                <RTooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(214, 32%, 91%)', fontSize: 12 }} />
-                <Bar dataKey="value" fill="hsl(221,83%,53%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card className="border shadow-sm" data-testid="pie-chart-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold" style={{ fontFamily: 'Manrope' }}>Financial Distribution</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 flex items-center justify-center">
-            {pieData.length > 0 ? (
+      {/* Charts - Only for Execs/Managers */}
+      {['super_admin', 'main_handler', 'admin', 'ceo', 'manager'].includes(user?.role) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border shadow-sm" data-testid="bar-chart-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold" style={{ fontFamily: 'Manrope' }}>Module Overview</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0">
               <ResponsiveContainer width="100%" height={260}>
-                <PieChart>
-                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
-                    {pieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
-                  </Pie>
+                <BarChart data={barData}>
+                  <XAxis dataKey="name" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                   <RTooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(214, 32%, 91%)', fontSize: 12 }} />
-                </PieChart>
+                  <Bar dataKey="value" fill="hsl(221,83%,53%)" radius={[4, 4, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <p className="text-sm text-muted-foreground py-16">No financial data yet</p>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border shadow-sm" data-testid="pie-chart-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold" style={{ fontFamily: 'Manrope' }}>Financial Distribution</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 flex items-center justify-center">
+              {pieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={260}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={3} dataKey="value">
+                      {pieData.map((_, idx) => <Cell key={idx} fill={PIE_COLORS[idx % PIE_COLORS.length]} />)}
+                    </Pie>
+                    <RTooltip contentStyle={{ borderRadius: 8, border: '1px solid hsl(214, 32%, 91%)', fontSize: 12 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-muted-foreground py-16">No financial data yet</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Quick Access */}
       <Card className="border shadow-sm" data-testid="quick-access-card">
@@ -144,10 +174,10 @@ export default function DashboardPage() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: 'CRM', path: '/crm', icon: Briefcase, color: 'bg-blue-500', roles: ['super_admin', 'main_handler', 'admin'] },
-              { label: 'Projects', path: '/projects', icon: FolderKanban, color: 'bg-teal-500', roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-              { label: 'HR', path: '/hr', icon: Users, color: 'bg-amber-500', roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-              { label: 'Finance', path: '/finance', icon: Receipt, color: 'bg-emerald-500', roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
+              { label: 'CRM', path: '/crm', icon: Briefcase, color: 'bg-blue-500', roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager'] },
+              { label: 'Projects', path: '/projects', icon: FolderKanban, color: 'bg-teal-500', roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager', 'server', 'employee'] },
+              { label: 'HR', path: '/hr', icon: Users, color: 'bg-amber-500', roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'hr'] },
+              { label: 'Finance', path: '/finance', icon: Receipt, color: 'bg-emerald-500', roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager'] },
             ].filter(q => q.roles.includes(user?.role)).map(q => (
               <button
                 key={q.path}

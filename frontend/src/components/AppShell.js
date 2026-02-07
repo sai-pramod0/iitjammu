@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Users, Briefcase, FolderKanban,
   Building2, Receipt, Bell, Menu, ChevronLeft,
-  LogOut, Grid3x3, Shield, FileText, CreditCard, Fingerprint, Brain
+  LogOut, Grid3x3, Shield, FileText, CreditCard, Fingerprint, Brain, Lightbulb, Presentation, Settings
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -24,6 +24,10 @@ const ROLE_LABELS = {
   super_admin: 'Super Admin',
   main_handler: 'Main Handler',
   admin: 'Admin',
+  ceo: 'CEO',
+  hr: 'HR',
+  manager: 'Manager',
+  server: 'Server',
   employee: 'Employee'
 };
 
@@ -31,22 +35,28 @@ const ROLE_COLORS = {
   super_admin: 'bg-red-100 text-red-800 border-red-200',
   main_handler: 'bg-amber-100 text-amber-800 border-amber-200',
   admin: 'bg-blue-100 text-blue-800 border-blue-200',
+  ceo: 'bg-purple-100 text-purple-800 border-purple-200',
+  hr: 'bg-pink-100 text-pink-800 border-pink-200',
+  manager: 'bg-orange-100 text-orange-800 border-orange-200',
+  server: 'bg-cyan-100 text-cyan-800 border-cyan-200',
   employee: 'bg-green-100 text-green-800 border-green-200'
 };
 
 const NAV_ITEMS = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-  { path: '/crm', label: 'CRM', icon: Briefcase, roles: ['super_admin', 'main_handler', 'admin'] },
-  { path: '/projects', label: 'Projects', icon: FolderKanban, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-  { path: '/hr', label: 'HR', icon: Building2, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-  { path: '/finance', label: 'Finance', icon: Receipt, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-  { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['super_admin', 'main_handler', 'admin', 'employee'] },
-  { path: '/analytics', label: 'Analytics', icon: Brain, roles: ['super_admin', 'main_handler', 'admin'] },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'hr', 'manager', 'server', 'employee'] },
+  { path: '/crm', label: 'CRM', icon: Briefcase, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager'] },
+  { path: '/projects', label: 'Projects', icon: FolderKanban, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager', 'server', 'employee'] },
+  { path: '/hr', label: 'HR', icon: Building2, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'hr'] },
+  { path: '/finance', label: 'Finance', icon: Receipt, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager'] },
+  { path: '/subscription', label: 'Subscription', icon: CreditCard, roles: ['super_admin', 'main_handler', 'admin', 'ceo'] },
+  { path: '/analytics', label: 'Analytics', icon: Brain, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager'] },
+  { path: '/ideas', label: 'Validation', icon: Lightbulb, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'manager', 'employee'] },
+  { path: '/pitch', label: 'Pitch Deck', icon: Presentation, roles: ['super_admin', 'main_handler', 'ceo', 'manager'] },
 ];
 
 const ADMIN_NAV = [
-  { path: '/users', label: 'Users', icon: Users, roles: ['super_admin', 'main_handler'] },
-  { path: '/audit-logs', label: 'Audit Logs', icon: FileText, roles: ['super_admin', 'main_handler'] },
+  { path: '/users', label: 'Users', icon: Users, roles: ['super_admin', 'main_handler', 'admin', 'ceo', 'hr', 'manager'] },
+  { path: '/audit-logs', label: 'Audit Logs', icon: FileText, roles: ['super_admin', 'main_handler', 'admin', 'ceo'] },
 ];
 
 const MODULE_GRID = [
@@ -68,7 +78,7 @@ export default function AppShell({ children }) {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    api.get('/notifications').then(r => setNotifications(r.data)).catch(() => {});
+    api.get('/notifications').then(r => setNotifications(r.data)).catch(() => { });
   }, [location.pathname]);
 
   const unread = notifications.filter(n => !n.read).length;
@@ -237,6 +247,9 @@ export default function AppShell({ children }) {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/notifications')} data-testid="menu-notifications">
                   <Bell className="w-4 h-4 mr-2" /> Notifications
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="menu-settings">
+                  <Settings className="w-4 h-4 mr-2" /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-destructive" data-testid="menu-logout">

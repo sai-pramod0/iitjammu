@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
                     </CardContent>
                   </Card>
                 </div>
-                <AIAnalysisCard analysis={burnData.ai_analysis} loading={burnLoading} />
+                {/* <AIAnalysisCard analysis={burnData.ai_analysis} loading={burnLoading} /> - Hidden as per user request */}
               </div>
             </motion.div>
           )}
@@ -220,7 +220,7 @@ export default function AnalyticsPage() {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-                <AIAnalysisCard analysis={unitData.ai_analysis} loading={unitLoading} />
+                {/* <AIAnalysisCard analysis={unitData.ai_analysis} loading={unitLoading} /> - Hidden as per user request */}
               </div>
             </motion.div>
           )}
@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
                     </CardContent>
                   </Card>
                 </div>
-                <AIAnalysisCard analysis={prodData.ai_analysis} loading={prodLoading} />
+                {/* <AIAnalysisCard analysis={prodData.ai_analysis} loading={prodLoading} /> - Hidden as per user request */}
               </div>
             </motion.div>
           )}

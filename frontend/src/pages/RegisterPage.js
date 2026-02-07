@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { api } from '../contexts/AuthContext';
+import { useAuth, api } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Globe, Search, Check, ArrowRight, ArrowLeft, Loader2, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '../components/ui/button';
