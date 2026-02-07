@@ -259,7 +259,7 @@ export default function AppShell({ children }) {
       </div>
 
       {/* Close waffle on outside click */}
-      {waffleOpen && <div className="fixed inset-0 z-40" onClick={() => setWaffleOpen(false)} />}
+      {waffleOpen && <div className="fixed inset-0 z-30" onClick={() => setWaffleOpen(false)} />}
     </div>
   );
 }
